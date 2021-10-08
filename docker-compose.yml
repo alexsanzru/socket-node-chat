@@ -1,0 +1,53 @@
+version: '2'
+
+services:
+  chat-interface:
+    container_name: chat-interface
+    restart: always
+    build: .
+    ports:
+      - "8888:3000"
+    command: forever server.js
+
+  chat-auth:
+    container_name: socketchat-auth
+    restart: always
+    build: .
+    ports:
+      - "3001:3001"
+    command: forever ./chat-auth/server.js
+
+  chat-receptor:
+    container_name: chat-receptor
+    restart: always
+    build: .
+    ports:
+      - "6001:3000"
+    command: forever ./chat-receptor/index.js
+    depends_on:
+      - redis
+
+  chat-emisor:
+    container_name: chat-emisor
+    restart: always
+    build: .
+    ports:
+      - "6002:3000"
+    command: forever ./chat-emisor/index.js
+    depends_on:
+      - redis
+
+  redis:
+    image: "redis:alpine"
+    container_name: chatredisdatabase
+    restart: always
+    volumes:
+      - data:/data
+    ports:
+      - "6379:6379"
+    environment:
+      - PORT=6379
+    command: ["redis-server", "--appendonly", "yes"]
+    hostname: redis
+volumes:
+  data:
