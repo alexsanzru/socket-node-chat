@@ -47,7 +47,7 @@ $( document ).ready(function() {
 */
 		eventObject.preventDefault();
 		if ($('#message_text').val() != "") {
-			socket.emit('enviar', {'room': room, 'msg':getMessageText(), 'username': username});
+			socket.emit('sendMessageFromChat', {'room': room, 'msg':getMessageText(), 'username': username});
 			$('#message_text').val('');
 			return false;
 		}
@@ -55,13 +55,12 @@ $( document ).ready(function() {
 
 
 	// Message received
-	socket.on('messageNew', function (data) {
-		alert('messageNew');
-		console.log("messageNew: %s", JSON.stringify(data));
+	socket.on('sendMessageToChat', function (data) {
+		alert('sendMessageToChat');
+		console.log("sendMessageToChat: %s", JSON.stringify(data));
 		addMessage(data);
 
 		// Scroll down room messages
-		//var room_messages = $('#room_messages');
 		var room_messages = $('#mCSB_1_container');
 		if (room_messages.length > 0){
 			//room_messages[0].scrollTop = room_messages[0].scrollHeight;

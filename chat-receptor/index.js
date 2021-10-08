@@ -18,7 +18,7 @@ http = http.createServer(app);
 var io = require('socket.io')(http);
 var handlebars = require('handlebars');
 
-require('./database')
+//require('./database')
 
 var port = process.env.PORT || conf.port
 
@@ -27,72 +27,46 @@ var server = http.listen(port, conf.host, function(){
 	console.log('listening on '+addr.address+':' + addr.port);
 });
 
-app.get('/enviar', function(req, res) {  
-	return res.status(200).jsonp({'status':200});
-});
+//app.get('/enviar', function(req, res) {  
+//	return res.status(200).jsonp({'status':200});
+//});
 
 // Logger configuration
-var logger = new events.EventEmitter();
-logger.on('newEvent', function(event, data) {
+//var logger = new events.EventEmitter();
+//logger.on('newEvent', function(event, data) {
 	// Console log
-	console.log('%s: %s', event, JSON.stringify(data));
-});
+//	console.log('%s: %s', event, JSON.stringify(data));
+//});
 
 // Welcome message
 io.on('connection', function(socket)
 	{
-//	db.flushdb( function (err, didSucceed) {
-//        console.log(didSucceed); // true
-//    });
 	return res.status(400).jsonp({'status':400});
 
 	io.emit('connected', 'Welcome to the chat server - Connection OK' );
 
-	//Connect to the room
-	socket.on('join', function(user){
-		socket.session = {};   // создаем объект с данными сокета
-		socket.session.userName = user.username;   // помещаем в объект имя пользователя
-		socket.session.userId = user.user_id;   // помещаем в объект имя пользователя
-		socket.session.address = socket.handshake.address; //помещаем в объект IP-адресс пользователя
-		socket.session.id = socket.id;    //помещаем в объект id сокета данного пользователя
-
-		console.log('Ищу Ключ: ' + user.user_id);
-
-		// Store user data in db
-		db.hset([user.user_id, 'connectionDate', new Date()], redis.print);
-		db.hset([user.user_id, 'socketID', socket.id]);
-		db.hset([user.user_id, 'username', user.username], redis.print);
-		db.hset([user.user_id, 'userid', user.user_id], redis.print);
-		db.hset([user.user_id, 'room', user.room], redis.print);
-
-		socket.join(user.room, function(err, obj)
+	socket.join(user.room, function(err, obj)
+		{
+		if (err)
 			{
-			if (err)
-				{
-				socket.emit('connectToSocket', {'room':user.room, 'username':socket.session.userName, 'msg':'error: ' + err, 'id':socket.session.userId,'username':'WinCoin Bingo'});
-				}
-			else
-				{
-				io.emit('messageNew', {'room':user.room, 'username':'WinCoin Bingo', 'msg': socket.session.userName + ' se ha unido al bingo', 'id':socket.session.userId});
-
-				var users_online = db.dbsize( function (err, numKeys) {
-					db.hset(['stat', 'connectedTotal', numKeys - 1], redis.print);
-					io.emit('updateBingoConnectionsTotal', {'counttotal': numKeys - 1});
-					});
-				}
-			});
+			socket.emit('connectToSocket', {'room':'MainRoom', 'username':'Anonymus', 'msg':'error: ' + err, 'id':'0','username':'Chat'});
+			}
+		else
+			{
+			io.emit('messageNew', {'room':'MainRoom', 'username':'Chat', 'msg': 'Anonymus' + ' se ha unido al bingo', 'id':'0'});
+			}
 		});
 
-		// Clean up on disconnect
-		socket.on('disconnect', function() {
-			// Get current rooms of user
-			var rooms = socket.rooms;
-			});
+	// Clean up on disconnect
+	socket.on('disconnect', function() {
+		// Get current rooms of user
+		var rooms = 'MainRoom';
+		});
 
 	// New message sent to group
-	socket.on('enviar', function(data)
+	socket.on('sendMessageFromChat', function(data)
 		{
-		var message = {'room':data.room, 'username':socket.session.userName, 'msg':data.msg, 'date':new Date()};
-		io.emit('messageNew', message);
+		var message = {'room':'MainRoom', 'username':'Anonymus', 'msg':data.msg, 'date':new Date()};
+		io.emit('sendMessageToChat', message);
 		});
 	});
